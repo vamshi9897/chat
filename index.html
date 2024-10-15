@@ -59,13 +59,9 @@
             let message = inp.value; // Get the input message correctly
 
             if (message) {
-                // Create a new paragraph element for the message
-                let p1 = document.createElement('p');
-                p1.className = 'my-message'; // Class for your messages
-                p1.innerText = `You: ${message}`; // Show "You" for your messages
-                div.appendChild(p1); // Add your message to the chat container
                 
-                socket.emit('message', { name: name, message: message }); // Send message object
+                
+                socket.emit('message', message); // Send message object
                 inp.value = ''; // Clear input after sending
                 div.scrollTop = div.scrollHeight; // Scroll to the bottom of the chat
             }
