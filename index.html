@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        div {
+            height: 80vh;
+            width: 50vw;
+            background-color: aquamarine;
+            overflow-y: auto; /* Allow scrolling if content exceeds div height */
+            margin: 20px auto; /* Center the chat area */
+            padding: 10px;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .my-message {
+            text-align: right; /* Align my messages to the right */
+        }
+        .other-message {
+            text-align: left; /* Align others' messages to the left */
+        }
+        .center{
+            text-align: center;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <div id="chat-container"></div>
+    <input id="inp" name="msg" type="text" placeholder="Type your message..."/>
+    <button>Send</button>
+
+    <script defer>
+        const socket = io('http://localhost:8080/'); 
+        const div = document.querySelector('#chat-container');
+        const inp = document.querySelector('#inp');
+        const btn = document.querySelector('button');
+        let name = prompt("Enter your name");
+
+        if (name) {
+            socket.emit('new', name);
+        }
+
+        socket.on('joined', name => {
+            let p = document.createElement('p');
+            p.className = 'center'; // Class for other messages
+            p.innerText = `${name} joined the chat`;
+            div.appendChild(p);
+        });
+
+        btn.addEventListener('click', () => {
+            let message = inp.value; // Get the input message correctly
+
+            if (message) {
+                // Create a new paragraph element for the message
+                let p1 = document.createElement('p');
+                p1.className = 'my-message'; // Class for your messages
+                p1.innerText = `You: ${message}`; // Show "You" for your messages
+                div.appendChild(p1); // Add your message to the chat container
+                
+                socket.emit('message', { name: name, message: message }); // Send message object
+                inp.value = ''; // Clear input after sending
+                div.scrollTop = div.scrollHeight; // Scroll to the bottom of the chat
+            }
+        });
+
+        socket.on('response', data => {
+            let p1 = document.createElement('p');
+            // Check if the message is from the user or another user
+            if (data.name === name) {
+                p1.className = 'my-message'; // Class for your messages
+                p1.innerText = `You: ${data.message}`; // Show "You" for your messages
+            } else {
+                p1.className = 'other-message'; // Class for other messages
+                p1.innerText = `${data.name}: ${data.message}`; // Display the sender's name
+            }
+            div.appendChild(p1);
+            div.scrollTop = div.scrollHeight; // Scroll to the bottom of the chat
+        });
+    </script>
+</body>
+</html>
